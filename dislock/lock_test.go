@@ -2,6 +2,7 @@ package dislock
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"testing"
 )
@@ -21,4 +22,24 @@ func TestSyncLock(t *testing.T) {
 	}
 	wg.Wait()
 	fmt.Println(count)
+}
+
+func TestTryLock(t *testing.T) {
+	var count int
+	var l = NewLock()
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if !l.Lock() {
+				log.Fatal("lock failed")
+				return
+			}
+			count++
+			fmt.Println("current count:", count)
+			l.Unlock()
+		}()
+		wg.Wait()
+	}
 }
